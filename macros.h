@@ -1,7 +1,7 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
-#define PROMPT_MSG "dillys<2 "
+#define PROMPT_MSG "afua<3 "
 #define UNUSED __attribute__((unused))
 #define BUFFER_SIZE 1024
 
