@@ -1,34 +1,46 @@
 #include "myshell.h"
-
 /**
-* execute - executes the child process referred to by pathname
-* @arrtok: array of tokens from the str_tok
-*/
-
-void execute(char **arrtok)
+ * execution - execute command
+ * By AFua
+ * @data: struct for program data
+ * Return: 0 on success, -1 on failure
+ */
+int execution(data_of_program *data)
 {
-	int res;
+	int r_value = 0, stat;
 	pid_t pid;
 
-	pid = fork();
+	r_value = list_of_builtins(data);
+	if (r_value != -1)
+		return (r_value);
 
-	if (pid == -1)
+	r_value = finding_program(data);
+	if (r_value)
 	{
-		perror("error");
-		free(arrtok);
-		exit(3);
+		return (r_value);
 	}
-	else if (pid > 0)
-		wait(NULL);
-	else if (pid == 0)
+	else
 	{
-		res = execve(arrtok[0], arrtok, NULL);
-		if (res == -1)
+		pid = fork();
+		if (pid == -1)
 		{
-			perror("error");
+			perror(data->command_name);
+			exit(EXIT_FAILURE);
 		}
-		free(arrtok);
-		exit(0);
+		if (pid == 0)
+		{
+			r_value = execve(data->tokens[0], data->tokens, data->env);
+			if (r_value == -1)
+				perror(data->command_name), exit(EXIT_FAILURE);
+		}
+		else
+		{
+			wait(&stat);
+			if (WIFEXITED(stat))
+				errno = WEXITSTATUS(stat);
+			else if (WIFSIGNALED(stat))
+				errno = 128 + WTERMSIG(stat);
+		}
 	}
-	free(arrtok);
+	return (0);
 }
